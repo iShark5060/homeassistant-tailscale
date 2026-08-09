@@ -1,122 +1,62 @@
-# Home Assistant Community App: Tailscale
+# Tailscale (iShark5060)
 
-[![GitHub Release][releases-shield]][releases]
-![Project Stage][project-stage-shield]
-[![License][license-shield]](LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![CI](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/ci.yml/badge.svg)](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/ci.yml)
+[![PR](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/pr.yml/badge.svg)](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/pr.yml)
+![aarch64](https://img.shields.io/badge/aarch64-yes-green.svg)
+![amd64](https://img.shields.io/badge/amd64-yes-green.svg)
+[![Cursor](https://img.shields.io/badge/Cursor-IDE-141414?logo=cursor&logoColor=white)](https://cursor.com)
 
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
+Zero-config VPN for Home Assistant. This is a **personal fork** of the [Home Assistant Community App: Tailscale](https://github.com/hassio-addons/app-tailscale).
 
-[![Github Actions][github-actions-shield]][github-actions]
-![Project Maintenance][maintenance-shield]
-[![GitHub Activity][commits-shield]][commits]
+Tailscale installs on any device in minutes, including your Home Assistant instance. By default this fork joins your tailnet as a normal client and exposes **only this machine**—exit node, subnet advertising, route/DNS acceptance, Taildrop, log upload, and similar extras stay off until you enable them.
 
-[![Discord][discord-shield]][discord]
-[![Community Forum][forum-shield]][forum]
+## Requirements
 
-[![Sponsor Frenck via GitHub Sponsors][github-sponsors-shield]][github-sponsors]
+This app targets **64-bit** Home Assistant installations only, matching [current Supervisor support](https://www.home-assistant.io/blog/2025/05/22/deprecating-core-and-supervised-installation-methods-and-32-bit-systems/): **aarch64** (ARM64) and **amd64** (x86_64).
 
-[![Support Frenck on Patreon][patreon-shield]][patreon]
+You also need a [Tailscale account](https://tailscale.com/start) (free for personal use).
 
-Zero config VPN for building secure networks.
+## Installation
 
-## About
+1. In Home Assistant, open **Settings** → **Add-ons** → **Add-on store**.
+2. Open the menu (**⋮**) → **Repositories**.
+3. Add this repository URL and confirm:
 
-Tailscale is a zero config VPN, which installs on any device in minutes,
-including your Home Assistant instance.
+   `https://github.com/iShark5060/homeassistant-tailscale`
 
-Create a secure network between your servers, computers, and cloud instances.
-Even when separated by firewalls or subnets, Tailscale just works. Tailscale
-manages firewall rules for you, and works from anywhere you are.
+4. Refresh the add-on store, then find **Tailscale (iShark5060)** and install it.
+5. Start the app, open the Web UI to authenticate with Tailscale, and confirm success in the logs.
 
-[:books: Read the full app documentation][docs]
+## Configuration
+
+See **[tailscale/DOCS.md](tailscale/DOCS.md)** for options (optional exit node, subnet routes, MagicDNS, Taildrop, and more).
 
 ## Support
 
-Got questions?
+- [Issues](https://github.com/iShark5060/homeassistant-tailscale/issues)
+- [License](LICENSE.md)
 
-You have several options to get them answered:
+## Credits
 
-- The [Home Assistant Community Apps Discord chat server][discord] for app
-  support and feature requests.
-- The [Home Assistant Discord chat server][discord-ha] for general Home
-  Assistant discussions and questions.
-- The Home Assistant [Community Forum][forum].
-- Join the [Reddit subreddit][reddit] in [/r/homeassistant][reddit]
+This fork is based on **[hassio-addons/app-tailscale](https://github.com/hassio-addons/app-tailscale)** by [Franck Nijhof](https://github.com/frenck) and contributors. Upstream remains the reference for the original Community App. Licensed under the MIT License (see `LICENSE.md`).
 
-You could also [open an issue here][issue] GitHub.
+## Scripts
 
-## Contributing
+| Script             | Description                                      |
+| ------------------ | ------------------------------------------------ |
+| `scripts/validate` | Docker image build quality gate for CI.          |
 
-This is an active open-source project. We are always open to people who want to
-use the code or contribute to it.
+## Upstream sync
 
-We have set up a separate document containing our
-[contribution guidelines](.github/CONTRIBUTING.md).
+This fork keeps an `upstream` remote for pulling Community App changes:
 
-Thank you for being involved! :heart_eyes:
+```bash
+git fetch upstream
+git log --oneline HEAD..upstream/main
+git merge upstream/main
+```
 
-## Authors & contributors
+## Development
 
-The original setup of this repository is by [Franck Nijhof][frenck].
-
-For a full list of all authors and contributors,
-check [the contributor's page][contributors].
-
-## We have got some Home Assistant apps for you
-
-Want some more functionality to your Home Assistant instance?
-
-We have created multiple apps for Home Assistant. For a full list, check out
-our [GitHub Repository][repository].
-
-## License
-
-MIT License
-
-Copyright (c) 2021-2026 Franck Nijhof
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[commits-shield]: https://img.shields.io/github/commit-activity/y/hassio-addons/app-tailscale.svg
-[commits]: https://github.com/hassio-addons/app-tailscale/commits/main
-[contributors]: https://github.com/hassio-addons/app-tailscale/graphs/contributors
-[discord-ha]: https://discord.gg/c5DvZ4e
-[discord-shield]: https://img.shields.io/discord/478094546522079232.svg
-[discord]: https://discord.me/hassioaddons
-[docs]: https://github.com/hassio-addons/app-tailscale/blob/main/tailscale/DOCS.md
-[forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg
-[forum]: https://community.home-assistant.io/?u=frenck
-[frenck]: https://github.com/frenck
-[github-actions-shield]: https://github.com/hassio-addons/app-tailscale/workflows/CI/badge.svg
-[github-actions]: https://github.com/hassio-addons/app-tailscale/actions
-[github-sponsors-shield]: https://frenck.dev/wp-content/uploads/2019/12/github_sponsor.png
-[github-sponsors]: https://github.com/sponsors/frenck
-[issue]: https://github.com/hassio-addons/app-tailscale/issues
-[license-shield]: https://img.shields.io/github/license/hassio-addons/app-tailscale.svg
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2026.svg
-[patreon-shield]: https://frenck.dev/wp-content/uploads/2019/12/patreon.png
-[patreon]: https://www.patreon.com/frenck
-[project-stage-shield]: https://img.shields.io/badge/project%20stage-experimental-yellow.svg
-[reddit]: https://reddit.com/r/homeassistant
-[releases-shield]: https://img.shields.io/github/release/hassio-addons/app-tailscale.svg
-[releases]: https://github.com/hassio-addons/app-tailscale/releases
-[repository]: https://github.com/hassio-addons/repository
+Engineering standards: AppBase `docs/org-standards/` with [personal-repos.md](https://github.com/Dark-Avian-Labs/AppBase/blob/main/docs/org-standards/personal-repos.md) (GitHub-hosted runners).

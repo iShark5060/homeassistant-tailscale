@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Quality gate: build the Tailscale app Docker image.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo '==> docker build'
+BUILD_FROM="${BUILD_FROM:-ghcr.io/hassio-addons/base/amd64:21.0.1}"
+docker build \
+  --build-arg "BUILD_FROM=${BUILD_FROM}" \
+  --build-arg "BUILD_ARCH=amd64" \
+  -t homeassistant-tailscale:validate \
+  tailscale
+
+echo '==> validate passed'

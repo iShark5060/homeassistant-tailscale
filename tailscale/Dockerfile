@@ -61,13 +61,13 @@ LABEL \
     io.hass.arch="${BUILD_ARCH}" \
     io.hass.type="addon" \
     io.hass.version=${BUILD_VERSION} \
-    maintainer="Franck Nijhof <opensource@frenck.dev>" \
+    maintainer="Lutz Schwemer Panchez <shark@shark5060.net>" \
     org.opencontainers.image.title="${BUILD_NAME}" \
     org.opencontainers.image.description="${BUILD_DESCRIPTION}" \
-    org.opencontainers.image.vendor="Home Assistant Community Apps" \
-    org.opencontainers.image.authors="Franck Nijhof <opensource@frenck.dev>" \
+    org.opencontainers.image.vendor="iShark5060" \
+    org.opencontainers.image.authors="Lutz Schwemer Panchez <shark@shark5060.net>" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.url="https://frenck.dev/home-assistant-apps" \
+    org.opencontainers.image.url="https://github.com/iShark5060/homeassistant-tailscale" \
     org.opencontainers.image.source="https://github.com/${BUILD_REPOSITORY}" \
     org.opencontainers.image.documentation="https://github.com/${BUILD_REPOSITORY}/blob/main/README.md" \
     org.opencontainers.image.created=${BUILD_DATE} \

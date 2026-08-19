@@ -7,9 +7,7 @@
 ![amd64](https://img.shields.io/badge/amd64-yes-green.svg)
 [![Cursor](https://img.shields.io/badge/Cursor-IDE-141414?logo=cursor&logoColor=white)](https://cursor.com)
 
-Zero-config VPN for Home Assistant. This is a **personal fork** of the [Home Assistant Community App: Tailscale](https://github.com/hassio-addons/app-tailscale).
-
-Tailscale installs on any device in minutes, including your Home Assistant instance. By default this fork joins your tailnet as a normal client and exposes **only this machine**—exit node, subnet advertising, route/DNS acceptance, Taildrop, log upload, and similar extras stay off until you enable them.
+Personal fork of the [Home Assistant Community Tailscale add-on](https://github.com/hassio-addons/app-tailscale). Joins your tailnet as a normal client and exposes this machine only. Exit node, subnet routes, and the other extras stay off until you turn them on.
 
 ## Requirements
 
@@ -43,9 +41,9 @@ This fork is based on **[hassio-addons/app-tailscale](https://github.com/hassio-
 
 ## Scripts
 
-| Script             | Description                                      |
-| ------------------ | ------------------------------------------------ |
-| `scripts/validate` | Docker image build quality gate for CI.          |
+| Script             | Description                             |
+| ------------------ | --------------------------------------- |
+| `scripts/validate` | Docker image build quality gate for CI. |
 
 ## Upstream sync
 

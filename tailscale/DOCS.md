@@ -40,8 +40,8 @@ however, it is nice to know where you need to go later on.
 By default this app behaves like a normal Tailscale client: it joins your
 tailnet and exposes **only this Home Assistant machine**. Features such as
 accepting MagicDNS/global DNS, accepting subnet routes, advertising as an exit
-node, advertising an app connector, advertising LAN subnets, Taildrop, or client
-log upload are available but **off** until you enable them.
+node, advertising an app connector, advertising LAN subnets, Tailscale Services,
+Taildrop, or client log upload are available but **off** until you enable them.
 
 Consider disabling key expiry to avoid losing connection to your Home Assistant
 device. See [Key expiry][tailscale_info_key_expiry] for more information.
@@ -51,21 +51,13 @@ their interface.
 
 https://console.tailscale.com/
 
-1. Navigate to the [Machines page][tailscale_machines] of the admin console, and
-   find your Home Assistant instance.
-
-1. If you later enable exit node or subnet route advertising in this app, click
-   the **&hellip;** icon at the right side and select "Edit route settings..."
-   to approve those routes in the admin console.
-
-1. Click on the **&hellip;** icon at the right side and select the "Disable key
-   expiry" option.
+**Note:** _Remember to restart the app when the configuration is changed._
 
 ```yaml
 accept_dns: false
 accept_routes: false
-advertise_exit_node: false
 advertise_connector: false
+advertise_exit_node: false
 advertise_routes: []
 advertise_tags: []
 always_use_derp: false
@@ -75,12 +67,9 @@ log_upload: false
 login_server: "https://controlplane.tailscale.com"
 share_homeassistant: disabled
 share_on_port: 443
+services: []
 snat_subnet_routes: true
 stateful_filtering: false
-# advertise_tags example when needed:
-# advertise_tags:
-#   - tag:example
-#   - tag:homeassistant
 taildrive:
   local_apps: false
   app_configs: false
@@ -119,21 +108,6 @@ More information: [Subnet routers][tailscale_info_subnets]
 
 This option is disabled by default.
 
-### Option: `advertise_exit_node`
-
-This option allows you to advertise this Tailscale instance as an exit node.
-
-By setting a device on your network as an exit node, you can use it to
-route all your public internet traffic as needed, like a consumer VPN.
-
-More information: [Exit nodes][tailscale_info_exit_nodes]
-
-This option is disabled by default.
-
-**Note:** You can't advertise this device as an exit node and at the same time
-specify an exit node to use. See also the "Option: `exit_node`" section of this
-documentation.
-
 ### Option: `advertise_connector`
 
 This option allows you to advertise this Tailscale instance as an app connector.
@@ -150,6 +124,31 @@ More information: [App connectors][tailscale_info_app_connectors]
 
 This option is disabled by default.
 
+### Option: `advertise_exit_node`
+
+This option allows you to advertise this Tailscale instance as an exit node.
+
+By setting a device on your network as an exit node, you can use it to
+route all your public internet traffic as needed, like a consumer VPN.
+
+More information: [Exit nodes][tailscale_info_exit_nodes]
+
+This option is disabled by default.
+
+**Note:** You can't advertise this device as an exit node and at the same time
+specify an exit node to use. See also the "Option: `exit_node`" section of this
+documentation.
+
+**Note:** After you enable this option, you also have to enable it on Tailscale's
+admin console.
+
+1. Navigate to the [Machines page][tailscale_machines] of the admin console, and
+   find your Home Assistant instance.
+
+1. Click on the **&hellip;** icon at the right side and select the "Edit route
+   settings..." option. The "Exit node" and "Subnet routes" functions can be
+   enabled here.
+
 ### Option: `advertise_routes`
 
 This option allows you to advertise routes to subnets (accessible on the network
@@ -164,7 +163,15 @@ nothing—this is the default.
 
 More information: [Subnet routers][tailscale_info_subnets]
 
-This option defaults to an empty list (no subnet routes advertised).
+**Note:** After you add subnets to this option, you also have to enable them on
+Tailscale's admin console.
+
+1. Navigate to the [Machines page][tailscale_machines] of the admin console, and
+   find your Home Assistant instance.
+
+1. Click on the **&hellip;** icon at the right side and select the "Edit route
+   settings..." option. The "Exit node" and "Subnet routes" functions can be
+   enabled here.
 
 ### Option: `advertise_tags`
 
@@ -263,6 +270,10 @@ This can prevent browsers from warning that HTTP URLs to your Home Assistant
 instance look unencrypted (browsers are not aware that the connections between
 Tailscale nodes are secured with end-to-end encryption).
 
+**Note:** Tailscale Serve and Funnel will automatically update the certificate
+before expiration, unlike the `tailscale cert` command. Follow the steps in this
+documentation below to set up Serve or Funnel properly.
+
 With the Tailscale Serve feature, you can access your Home Assistant instance
 with the provided certificate within your tailnet from devices already connected
 to your tailnet.
@@ -279,22 +290,29 @@ _VPN_ &#8658; **Tailscale Serve** (HTTPS proxy) &#8594; **HA** (HTTP web-server)
 More information: [Enabling HTTPS][tailscale_info_https],
 [Tailscale Serve][tailscale_info_serve], [Tailscale Funnel][tailscale_info_funnel].
 
-1. Configure Home Assistant to be accessible through an HTTP connection (this is
-   the default). See [HTTP integration documentation][http_integration] for more
-   information. If you still want to use another HTTPS connection to access Home
-   Assistant, please use a reverse proxy app.
+**Note:** If you only want to expose Home Assistant on your tailnet, but with
+Tailscale Services, you can also configure it through the `services` option.
+However, the `services` option does not support Tailscale Funnel, only Tailscale
+Serve. If you need to access Home Assistant from the internet, use this option
+instead.
+
+1. Disable **SSL/TLS** so Home Assistant is accessible through an HTTP
+   connection (this is the default). You can access this setting at **Settings**
+   -> **System** -> **Network** -> **HTTP server** -> **SSL/TLS**
+
+   **Note:** If you want to use another HTTPS connection to access Home
+   Assistant, though Tailscale can access Home Assistant even if Home Assistant
+   is using SSL and is accessible through an HTTPS connection, please use a
+   reverse proxy app for that HTTPS connection instead of configuring Home
+   Assistant to use SSL.
 
 1. Home Assistant, by default, blocks requests from reverse proxies, like the
-   Tailscale Serve. To enable it, add the following lines to your
-   `configuration.yaml`, without changing anything (don't forget to restart Home
-   Assistant after the changes are saved):
+   Tailscale Serve. To enable it, go to **Settings** -> **System** ->
+   **Network** -> **HTTP server** -> **Reverse proxy** and edit the options
+   below (don't forget to restart Home Assistant after the changes are saved):
+   - Enable `Trust X-Forwarded-For` option.
 
-   ```yaml
-   http:
-     use_x_forwarded_for: true
-     trusted_proxies:
-       - 127.0.0.1
-   ```
+   - Add "127.0.0.1" to the `Trusted proxies` option.
 
 1. Navigate to the [DNS page][tailscale_dns] of the admin console:
    - Choose a tailnet name.
@@ -331,6 +349,60 @@ internet.
 Only ports 443, 8443, and 10000 are allowed by Tailscale.
 
 Port 443 is used by default.
+
+### Option: `services`
+
+This option allows you to advertise other local services running on this device
+as Tailscale Services. Each service needs a name, a local target address,
+furthermore a protocol, and a port to expose it on.
+
+This option is disabled by default.
+
+**Note:** For Tailscale Services to work, this device must use tags. See the
+`advertise_tags` option for more information.
+
+You can use this option to expose an app running on your Home Assistant
+instance, such as an audiobookshelf app, to your tailnet using a stable MagicDNS
+name.
+
+- The service `name` must include the `svc:` prefix.
+
+- The `target` must be a local address reachable from this app. Use `http://` or
+  `https://` targets for HTTP/HTTPS protocols, and `tcp://` targets for TCP and
+  tls-terminated-tcp protocols, for example `http://127.0.0.1:13378`.
+
+- Supported protocols by which the target will be presented:
+
+  **Note:** For `https` and `tls-terminated-tcp` protocols you must enable
+  MagicDNS and HTTPS certificates for your tailnet on the [DNS
+  page][tailscale_dns] of the admin console first. Once enabled, Tailscale
+  automatically provisions a TLS certificate for the service.
+
+  - `http`: Expose the service as an HTTP server on the configured port.
+
+  - `https`: Expose the service as an HTTPS server on the configured port.
+
+  - `tcp`: Forward raw TCP packets to the configured target.
+
+  - `tls-terminated-tcp`: Forward TLS-terminated TCP packets to the configured
+    target.
+
+- The `port` is where the target will be exposed.
+
+- The `path` is where the target will be exposed. Optional, defaults to `/`, and
+  can be used only for the HTTP/HTTPS protocols.
+
+Before a service can accept traffic:
+
+1. You must define the Service on the [Services page][tailscale_services] of the
+   admin console.
+
+1. Restart the app.
+
+1. Approve this device as a Service host on the [Services
+   page][tailscale_services] of the admin console.
+
+More information: [Tailscale Services][tailscale_info_services].
 
 ### Option: `snat_subnet_routes`
 
@@ -381,9 +453,9 @@ Received files are stored in the `/share/taildrop` directory.
 
 ### Option: `userspace_networking`
 
-The app uses [userspace networking mode][tailscale_info_userspace_networking]
-to make your Home Assistant instance (and optionally the local subnets)
-accessible within your tailnet.
+When enabled, Tailscale will not create a `tailscale0` network interface on your
+host, i.e. you get one-way access from tailnet clients to your Home Assistant
+instance (and optionally the local subnets).
 
 This option is enabled by default.
 
@@ -397,7 +469,11 @@ but also by their tailnet name, see the "DNS" section of this documentation.
 If you want to access other clients on your tailnet even from your local subnet,
 follow steps in the [Site-to-site networking][tailscale_info_site_to_site] guide
 (Note: The app already handles "IP address forwarding" and "Clamp the MSS to
-the MTU" for you).
+the MTU" for you). See also the "Option: `snat_subnet_routes`" section of this
+documentation.
+
+More information: [Userspace networking
+mode][tailscale_info_userspace_networking]
 
 **Note:** In case your local subnets collide with subnet routes within your
 tailnet, your local network access has priority, and these addresses won't be
@@ -405,15 +481,6 @@ routed toward your tailnet. This will prevent your Home Assistant instance from
 losing network connection. This also means that using the same subnet on
 multiple nodes for load balancing and failover is impossible with the current
 app behavior.
-
-**Note:** The `userspace_networking` option can remain enabled if you only need
-one-way access from tailnet clients to your local subnet, without requiring
-access from your local subnet to other tailnet clients.
-
-**Note:** If you implement Site-to-site networking, but you are not interested
-in the real source IP address, i.e. subnet devices can see the traffic
-originating from the subnet router, you don't need to disable the
-`snat_subnet_routes` option, this can simplify routing configuration.
 
 ## Network
 
@@ -456,17 +523,6 @@ More information: [What is 100.100.100.100][tailscale_info_quad100],
 that you always have to use the fully qualified domain name instead of only the
 device name, i.e. `ping some-tailnet-device.tail1234.ts.net` works, but `ping
 some-tailnet-device` does not work.
-
-**Note:** If you are running your own DNS (like AdGuard) **_on this_** Home
-Assistant device also, and this device is configured as global nameserver on the
-[DNS page][tailscale_dns] of the admin console, then:
-
-1. Disable the `accept_dns` option to prevent the Tailscale DNS from redirecting
-   queries from your device back to itself, which would cause a loop.
-
-1. Configure your own DNS for Home Assistant (instead of 100.100.100.100), and
-   in your own DNS configure Tailscale DNS for your tailnet domain as upstream
-   DNS server (e.g. in case of AdGuard `[/tail1234.ts.net/]100.100.100.100`).
 
 ## Changelog & Releases
 
@@ -519,7 +575,6 @@ SOFTWARE.
 [contributors]: https://github.com/hassio-addons/app-tailscale/graphs/contributors
 [frenck]: https://github.com/frenck
 [headscale]: https://github.com/juanfont/headscale
-[http_integration]: https://www.home-assistant.io/integrations/http/
 [issue]: https://github.com/iShark5060/homeassistant-tailscale/issues
 [releases]: https://github.com/iShark5060/homeassistant-tailscale/releases
 [semver]: https://semver.org/spec/v2.0.0.html
@@ -536,6 +591,7 @@ SOFTWARE.
 [tailscale_info_pi_hole]: https://tailscale.com/docs/solutions/block-ads-all-devices-anywhere-using-raspberry-pi
 [tailscale_info_quad100]: https://tailscale.com/docs/reference/quad100
 [tailscale_info_serve]: https://tailscale.com/docs/features/tailscale-serve
+[tailscale_info_services]: https://tailscale.com/docs/features/tailscale-services
 [tailscale_info_site_to_site]: https://tailscale.com/docs/features/site-to-site
 [tailscale_info_subnets]: https://tailscale.com/docs/features/subnet-routers
 [tailscale_info_tags]: https://tailscale.com/docs/features/tags
@@ -543,3 +599,4 @@ SOFTWARE.
 [tailscale_info_taildrop]: https://tailscale.com/docs/features/taildrop
 [tailscale_info_userspace_networking]: https://tailscale.com/docs/concepts/userspace-networking
 [tailscale_machines]: https://console.tailscale.com/admin/machines
+[tailscale_services]: https://console.tailscale.com/admin/services

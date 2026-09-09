@@ -1,12 +1,11 @@
 #!/command/with-contenv bashio
 # shellcheck shell=bash
-export LOG_FD
 # ==============================================================================
 # Home Assistant Community App: Tailscale
 # Runs after the machine has been logged in into the Tailscale network
 # ==============================================================================
 
-source /usr/lib/api.core.sh
+shopt -s extglob
 
 declare interface
 declare -a options
@@ -16,7 +15,9 @@ declare -a colliding_routes=()
 declare login_server
 declare advertise_tags
 declare keyexpiry
-declare attributes
+declare error_message
+declare backend_state
+declare nostate_started_timestamp
 
 # Default options
 options+=(--hostname "$(bashio::info.hostname)")
@@ -96,17 +97,41 @@ IFS=","
 options+=(--advertise-routes="${routes[*]}")
 unset IFS
 
-# Wait for the network to be available and logged in
+# Wait for the network to be available
+# Loop here while BackendState is:
+# - Starting
+# - NoState (first time connecting to control) for less than 30s, to handle potential startup transients
+# Move on to tailscale up, when BackendState is:
+# - NoState (first time connecting to control) for more than 30s
+# - Stopped (result of a manual tailscale down command)
+# - NeedsLogin
+# - NeedsMachineAuth
+# - Running
+# Note: {} is used instead of () to achieve && precedence over || without subshell,
+#   subshell would not update the value of nostate_started_timestamp here
 while ! bashio::fs.socket_exists "/var/run/tailscale/tailscaled.sock" || \
-  ! /opt/tailscale status --json --peers=false --self=false \
-    | jq --exit-status '.BackendState == "Running" or .BackendState == "NeedsLogin" or .BackendState == "Stopped"' > /dev/null;
+  ! backend_state=$( \
+    /opt/tailscale status --json --peers=false --self=false \
+    | jq -rcM '.BackendState') || \
+  [[ ! "${backend_state}" = @(NoState|Stopped|NeedsLogin|NeedsMachineAuth|Running) ]] || \
+  { [[ "${backend_state}" == "NoState" ]] && \
+    (( $(date +"%s") - ${nostate_started_timestamp:=$(date +"%s")} < 30 )) }
 do
   sleep 2
 done
 
 # Start Tailscale
-if ! /opt/tailscale up "${options[@]}"; then
-  bashio::exit.nok "Unable to start up Tailscale"
+# Capture stderr in a variable but write it to the log also
+if ! { error_message=$(/opt/tailscale up "${options[@]}" 2> >(tee /dev/fd/2) 1>&3); } 3>&1; then
+  if [[ $error_message != *"can't change --login-server without --force-reauth"* ]]; then
+    bashio::exit.nok "Unable to start up Tailscale"
+  fi
+  # Execute this only, if tailscale up explicitly complained about this
+  bashio::log.warning "The login server option has changed, forcing reauthentication"
+  options+=(--force-reauth)
+  if ! /opt/tailscale up "${options[@]}"; then
+    bashio::exit.nok "Unable to start up Tailscale"
+  fi
 fi
 
 # Wait for the network to be available and logged in
@@ -145,25 +170,9 @@ fi
 
 # Warn about key expiration
 if keyexpiry=$(/opt/tailscale status --self=true --peers=false --json | jq -rce '.Self.KeyExpiry'); then
-  keyexpiry="${keyexpiry:0:10} ${keyexpiry:11:8} UTC"
-
   bashio::log.warning "The connection's key will expire on: ${keyexpiry}"
   bashio::log.warning "Consider disabling key expiry to avoid losing connection to your Home Assistant device."
   bashio::log.warning "Please check your configuration based on the app's documentation under the \"Configuration\" section."
-
-  # Create persistent notification also, but only once
-  if ! bashio::fs.file_exists "/data/key_expiry_notification_is_done"; then
-    attributes=$(bashio::var.json \
-        title "Tailscale App" \
-        message "$(printf "%s\n\n" \
-          "**The connection's key will expire on: ${keyexpiry}!**" \
-          "Consider disabling key expiry to avoid losing connection to your Home Assistant device." \
-          "You can use the [Machines page](https://console.tailscale.com/admin/machines) of Tailscale's admin console to disable key expiry." \
-          "Please check your configuration based on the app's documentation under the \"Configuration\" section.")")
-    if api.core POST services/persistent_notification/create "${attributes}" -w > /dev/null; then
-      touch "/data/key_expiry_notification_is_done"
-    fi
-  fi
 fi
 
 # Warn about colliding subnet routes if non-userspace networking and accepting routes are enabled

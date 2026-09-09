@@ -28,7 +28,7 @@ You also need a [Tailscale account](https://tailscale.com/start) (free for perso
 
 ## Configuration
 
-See **[tailscale/DOCS.md](tailscale/DOCS.md)** for options (optional exit node, subnet routes, MagicDNS, Taildrop, and more).
+See **[tailscale/DOCS.md](tailscale/DOCS.md)** for options (optional exit node, subnet routes, MagicDNS, Tailscale Services, Taildrop, and more).
 
 ## Support
 

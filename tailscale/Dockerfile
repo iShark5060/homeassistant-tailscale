@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.1
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.4
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 ARG BUILD_ARCH=amd64
-ARG TAILSCALE_VERSION="v1.102.2"
+ARG TAILSCALE_VERSION="v1.102.3"
 RUN \
     apk add --no-cache \
         bind-tools=9.20.27-r0 \

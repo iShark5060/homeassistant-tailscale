@@ -7,7 +7,9 @@
 ![amd64](https://img.shields.io/badge/amd64-yes-green.svg?style=flat-square)
 [![Cursor](https://img.shields.io/badge/Cursor-IDE-141414?logo=cursor&logoColor=white&style=flat-square)](https://cursor.com)
 
-Personal fork of the [Home Assistant Community Tailscale add-on](https://github.com/hassio-addons/app-tailscale). Joins your tailnet as a normal client and exposes this machine only. Exit node, subnet routes, MagicDNS, Tailscale Services, and Taildrop stay off until you turn them on.
+Personal fork of the [Home Assistant Community Tailscale add-on](https://github.com/hassio-addons/app-tailscale). It joins your tailnet as a normal client and exposes this machine only. Exit node, subnet routes, MagicDNS, Tailscale Services, and Taildrop stay off until you turn them on.
+
+I wanted the add-on without turning the Home Assistant box into a router by default.
 
 Needs a [Tailscale account](https://tailscale.com/start). Options: [tailscale/DOCS.md](tailscale/DOCS.md).
 

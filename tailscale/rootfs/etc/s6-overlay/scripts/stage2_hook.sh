@@ -7,9 +7,12 @@
 
 declare options
 declare proxy funnel proxy_and_funnel_port
+declare advertise_routes
+declare -a routes=()
 declare tags
 declare taildrive_addons taildrive_config
 declare share_service_name
+declare log_level log_suppression
 
 readonly MAGIC_DNS_IPV4="100.100.100.100"
 readonly MAGIC_DNS_IPV6="fd7a:115c:a1e0::53"
@@ -86,6 +89,56 @@ share_service_name=$(bashio::jq "${options}" '.share_service_name | select(.!=nu
 if bashio::var.has_value "${share_service_name}"; then
     bashio::log.info 'Removing deprecated share_service_name option'
     bashio::app.option 'share_service_name'
+fi
+
+# Migrate advertise_routes option, replace "local_subnets" with the actual values
+advertise_routes=$(bashio::jq "${options}" '.advertise_routes | select(.!=null)')
+if bashio::var.has_value "${advertise_routes}" && \
+    bashio::jq.has_value "${advertise_routes}" '.[] | select(.|test("^local_subnets$"))'
+then
+    bashio::log.info "Migrating advertise_routes option, replacing \"local_subnets\" with the actual values"
+    if ! wait-for-local-network; then
+        bashio::log.warning \
+            "The local network is temporarily down, can't get local subnet information, can't migrate to actual values." \
+            "You have to add the local subnets to the advertise_routes option manually."
+        # Keep only user defined other subnets
+        readarray -t routes < <(bashio::jq "${advertise_routes}" '.[] | select(.|test("^local_subnets$")|not)')
+        # Save it
+        advertise_routes=$(bashio::var.json_array "${routes[@]}")
+        bashio::app.option 'advertise_routes' "^${advertise_routes}"
+    else
+        # Read local subnets
+        readarray -t routes < <(subnet-routes local)
+        if (( 0 == ${#routes[@]} )); then
+            bashio::log.warning "There are no local subnets to add in place of \"local_subnets\"!"
+        fi
+        # Add user defined other subnets
+        readarray -t -O "${#routes[@]}" routes < <(bashio::jq "${advertise_routes}" '.[] | select(.|test("^local_subnets$")|not)')
+        # Save it
+        advertise_routes=$(bashio::var.json_array "${routes[@]}")
+        bashio::app.option 'advertise_routes' "^${advertise_routes}"
+        # Reread to sanitize values, remove duplicates
+        readarray -t routes < <(subnet-routes advertised)
+        # Save it again
+        advertise_routes=$(bashio::var.json_array "${routes[@]}")
+        bashio::app.option 'advertise_routes' "^${advertise_routes}"
+    fi
+fi
+
+# Migrate log_level to log_suppression
+log_level=$(bashio::jq "${options}" '.log_level | select(.!=null)')
+if bashio::var.has_value "${log_level}"; then
+    if bashio::var.equals "${log_level}" 'debug' || \
+        bashio::var.equals "${log_level}" 'trace'
+    then
+        log_suppression="false"
+    else
+        log_suppression="true"
+    fi
+    bashio::app.option 'log_suppression' "^${log_suppression}"
+    bashio::log.info "Successfully migrated log_level option \"${log_level}\" to log_suppression \"${log_suppression}\""
+    bashio::log.info 'Removing deprecated log_level option'
+    bashio::app.option 'log_level'
 fi
 
 # Check DNS configuration

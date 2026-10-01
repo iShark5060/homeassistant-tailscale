@@ -1,8 +1,6 @@
 # Tailscale (iShark5060)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE.md)
-[![CI](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/ci.yml/badge.svg)](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/ci.yml)
-[![PR](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/pr.yml/badge.svg)](https://github.com/iShark5060/homeassistant-tailscale/actions/workflows/pr.yml)
 ![aarch64](https://img.shields.io/badge/aarch64-yes-green.svg?style=flat-square)
 ![amd64](https://img.shields.io/badge/amd64-yes-green.svg?style=flat-square)
 [![Cursor](https://img.shields.io/badge/Cursor-IDE-141414?logo=cursor&logoColor=white&style=flat-square)](https://cursor.com)

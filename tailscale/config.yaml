@@ -1,6 +1,6 @@
 ---
 name: Tailscale (iShark5060)
-version: 1.2.0
+version: 1.2.1
 slug: tailscale
 description: Zero config VPN for Home Assistant — personal fork with minimal defaults
 url: https://github.com/iShark5060/homeassistant-tailscale

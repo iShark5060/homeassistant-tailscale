@@ -465,6 +465,21 @@ losing network connection. This also means that using the same subnet on
 multiple nodes for load balancing and failover is impossible with the current
 app behavior.
 
+**Note:** If you access Home Assistant directly via the tailnet, without using
+Serve or Funnel (ie. without using `share_homeassistant` or `services` options):
+
+- If you access Home Assistant with its tailnet address (IP or url) and
+  `userspace_networking` is disabled, Home Assistant sees incoming traffic
+  originating from the tailnet (100.x.x.x addresses). Those users need
+  "local access only" turned off. This fork enables `userspace_networking` by
+  default, so Home Assistant sees that traffic as coming from localhost
+  (127.0.0.1) and "local access only" can stay on.
+
+- If you access Home Assistant with its LAN address (via subnet routing) and
+  `snat_subnet_routes` is enabled (the default), Home Assistant sees incoming
+  traffic originating from its LAN IP, whether `userspace_networking` is
+  enabled or not. "local access only" can stay on.
+
 ## Network
 
 ### Port: `41641/udp`
